@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testing Autonomy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────────── */
+    :root {
+      --bg:          #1a1918;
+      --surface:     #232120;
+      --surface-2:   #2b2927;
+      --border:      #343130;
+      --log-bg:      #131211;
+
+      --accent:      #c87941;
+      --accent-dim:  rgba(200,121,65,.15);
+      --accent-hi:   #d98d56;
+
+      --text:        #e3dbd2;
+      --text-muted:  #7d756c;
+      --text-dim:    #4a4542;
+
+      --green:       #86efac;
+      --green-dim:   rgba(134,239,172,.12);
+      --yellow:      #fcd34d;
+      --yellow-dim:  rgba(252,211,77,.12);
+      --red:         #f87171;
+      --red-dim:     rgba(248,113,113,.12);
+      --blue:        #93c5fd;
+
+      --radius:      6px;
+      --mono:        'Cascadia Code', 'Fira Code', ui-monospace, 'Courier New', monospace;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 2.25rem 3rem 2rem;
+    }
+
+    .wordmark {
+      display: flex;
+      align-items: baseline;
+      gap: .65rem;
+    }
+
+    h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -.025em;
+      color: var(--text);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+      margin-bottom: 3px;
+    }
+
+    .tagline {
+      margin-top: .3rem;
+      color: var(--text-muted);
+      font-size: .875rem;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────────── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+
+    /* ── Form card ──────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .field:last-child { margin-bottom: 0; }
+
+    .field-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    input[type="url"],
+    input[type="number"],
+    textarea {
+      background: var(--log-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: .92rem;
+      padding: .55rem .75rem;
+      transition: border-color .15s;
+      width: 100%;
+    }
+
+    input[type="url"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    input[type="url"]::placeholder,
+    textarea::placeholder { color: var(--text-dim); }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* bottom row: max-steps + button side-by-side */
+    .form-footer {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .form-footer .field {
+      margin-bottom: 0;
+      width: 140px;
+      flex-shrink: 0;
+    }
+
+    input[type="number"] { width: 100%; }
+
+    #submit-btn {
+      flex: 1;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      cursor: pointer;
+      font-size: .92rem;
+      font-weight: 600;
+      letter-spacing: .01em;
+      padding: .6rem 1.5rem;
+      transition: background .15s, opacity .15s;
+    }
+
+    #submit-btn:hover:not(:disabled) { background: var(--accent-hi); }
+    #submit-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+    /* ── Section headings ───────────────────────────────────────── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .6rem;
+    }
+
+    .section-title {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── Status badge ───────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: .18rem .55rem;
+      border-radius: 20px;
+    }
+
+    .badge-running { background: var(--accent-dim);  color: var(--accent); }
+    .badge-done    { background: var(--green-dim);   color: var(--green);  }
+    .badge-failed  { background: var(--red-dim);     color: var(--red);    }
+
+    /* ── Log panel ──────────────────────────────────────────────── */
+    #log-section { margin-top: 2rem; }
+
+    #log-pre {
+      background: var(--log-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--mono);
+      font-size: .78rem;
+      height: 300px;
+      line-height: 1.55;
+      overflow-y: auto;
+      padding: .9rem 1rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* scrollbar */
+    #log-pre::-webkit-scrollbar { width: 6px; }
+    #log-pre::-webkit-scrollbar-track { background: transparent; }
+    #log-pre::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    .log-line { display: block; }
+
+    .log-DEBUG   { color: var(--text-muted); }
+    .log-INFO    { color: var(--text); }
+    .log-SUCCESS { color: var(--green); }
+    .log-WARNING { color: var(--yellow); }
+    .log-ERROR   { color: var(--red); }
+
+    .log-lvl {
+      display: inline-block;
+      font-weight: 700;
+      min-width: 7ch;
+      opacity: .75;
+    }
+
+    /* ── Result panel ───────────────────────────────────────────── */
+    #result-section { margin-top: 2rem; }
+
+    .result-wrap {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .result-toolbar {
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: .5rem .85rem;
+    }
+
+    .result-lang {
+      font-family: var(--mono);
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+
+    #copy-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: .72rem;
+      font-weight: 500;
+      padding: .2rem .6rem;
+      transition: color .12s, border-color .12s;
+    }
+
+    #copy-btn:hover {
+      color: var(--text);
+      border-color: var(--text-muted);
+    }
+
+    /* override hljs background so it matches the theme */
+    .result-wrap pre.hljs,
+    .result-wrap pre code.hljs {
+      background: var(--log-bg) !important;
+    }
+
+    #result-section pre {
+      margin: 0;
+      max-height: 520px;
+      overflow: auto;
+    }
+
+    #result-section pre::-webkit-scrollbar { width: 6px; height: 6px; }
+    #result-section pre::-webkit-scrollbar-track { background: transparent; }
+    #result-section pre::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    #result-section code {
+      font-family: var(--mono) !important;
+      font-size: .78rem !important;
+    }
+
+    [hidden] { display: none !important; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wordmark">
+      <h1>Testing Autonomy</h1>
+      <div class="dot"></div>
+    </div>
+    <p class="tagline">AI agent that explores your app and writes Playwright tests</p>
+  </header>
+
+  <main>
+    <!-- ── Form ─────────────────────────────────────────────────── -->
+    <div class="card">
+      <form id="form" novalidate>
+        <div class="field">
+          <label class="field-label" for="url-input">URL</label>
+          <input
+            id="url-input"
+            type="url"
+            placeholder="https://your-app.com"
+            required
+            autocomplete="url"
+          />
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="journey-input">Journey</label>
+          <textarea
+            id="journey-input"
+            placeholder="Describe the user journey to test, e.g. &quot;Sign up with a new email, then log out&quot;"
+            required
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div class="form-footer">
+          <div class="field">
+            <label class="field-label" for="steps-input">Max steps</label>
+            <input id="steps-input" type="number" value="12" min="1" max="50" />
+          </div>
+          <button id="submit-btn" type="submit">Generate Test</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── Log panel ─────────────────────────────────────────────── -->
+    <section id="log-section" hidden>
+      <div class="section-header">
+        <span class="section-title">Agent log</span>
+        <span id="log-badge" class="badge badge-running">Running</span>
+      </div>
+      <pre id="log-pre" aria-live="polite"></pre>
+    </section>
+
+    <!-- ── Result panel ──────────────────────────────────────────── -->
+    <section id="result-section" hidden>
+      <div class="section-header">
+        <span class="section-title">Generated test</span>
+      </div>
+      <div class="result-wrap">
+        <div class="result-toolbar">
+          <span class="result-lang">TypeScript · Playwright</span>
+          <button id="copy-btn" type="button">Copy</button>
+        </div>
+        <pre><code id="result-code" class="language-typescript"></code></pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+
+    const form        = document.getElementById('form');
+    const urlInput    = document.getElementById('url-input');
+    const journeyInput= document.getElementById('journey-input');
+    const stepsInput  = document.getElementById('steps-input');
+    const submitBtn   = document.getElementById('submit-btn');
+    const logSection  = document.getElementById('log-section');
+    const logPre      = document.getElementById('log-pre');
+    const logBadge    = document.getElementById('log-badge');
+    const resultSection = document.getElementById('result-section');
+    const resultCode  = document.getElementById('result-code');
+    const copyBtn     = document.getElementById('copy-btn');
+
+    // ── SSE parser state ──────────────────────────────────────────
+    let sseBuffer = '';
+
+    function parseSseChunk(chunk) {
+      sseBuffer += chunk;
+      const events = [];
+      // SSE blocks are separated by blank lines (\n\n)
+      const blocks = sseBuffer.split('\n\n');
+      sseBuffer = blocks.pop(); // keep the incomplete trailing block
+
+      for (const block of blocks) {
+        if (!block.trim()) continue;
+        let eventName = 'message';
+        let dataLine  = '';
+        for (const line of block.split('\n')) {
+          if (line.startsWith('event: ')) eventName = line.slice(7).trim();
+          else if (line.startsWith('data: '))  dataLine  = line.slice(6);
+        }
+        if (dataLine) events.push({ name: eventName, data: dataLine });
+      }
+      return events;
+    }
+
+    // ── Form submit ───────────────────────────────────────────────
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const url     = urlInput.value.trim();
+      const journey = journeyInput.value.trim();
+      const maxSteps= parseInt(stepsInput.value, 10) || 12;
+
+      if (!url || !journey) return;
+
+      // Reset UI
+      logPre.textContent = '';
+      resultCode.textContent = '';
+      resultCode.removeAttribute('data-highlighted');
+      resultSection.hidden = true;
+      logSection.hidden = false;
+      setBadge('running');
+      submitBtn.disabled = true;
+      sseBuffer = '';
+
+      try {
+        const res = await fetch('/api/generate', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ url, journey, max_steps: maxSteps }),
+        });
+
+        if (!res.ok) {
+          appendLog('ERROR', `HTTP ${res.status}: ${res.statusText}`);
+          setBadge('failed');
+          submitBtn.disabled = false;
+          return;
+        }
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = decoder.decode(value, { stream: true });
+          const events = parseSseChunk(text);
+
+          for (const { name, data } of events) {
+            let payload;
+            try { payload = JSON.parse(data); } catch { continue; }
+            handleEvent(name, payload);
+          }
+        }
+      } catch (err) {
+        appendLog('ERROR', `Connection lost: ${err.message}`);
+        setBadge('failed');
+        submitBtn.disabled = false;
+      }
+    });
+
+    // ── Event handlers ────────────────────────────────────────────
+    function handleEvent(name, payload) {
+      if (name === 'log') {
+        appendLog(payload.level ?? 'INFO', payload.msg ?? '');
+      } else if (name === 'emit') {
+        showCode(payload.code ?? '');
+      } else if (name === 'done') {
+        const ok = Boolean(payload.success);
+        setBadge(ok ? 'done' : 'failed');
+        if (payload.summary) {
+          appendLog(ok ? 'SUCCESS' : 'ERROR', payload.summary);
+        }
+        submitBtn.disabled = false;
+      }
+    }
+
+    // ── Log helpers ───────────────────────────────────────────────
+    function appendLog(level, msg) {
+      const line = document.createElement('span');
+      line.className = `log-line log-${level}`;
+
+      const lvlSpan = document.createElement('span');
+      lvlSpan.className = 'log-lvl';
+      lvlSpan.textContent = level;
+
+      line.appendChild(lvlSpan);
+      line.appendChild(document.createTextNode(' ' + msg + '\n'));
+      logPre.appendChild(line);
+
+      // Auto-scroll only if already near the bottom
+      const nearBottom = logPre.scrollHeight - logPre.scrollTop - logPre.clientHeight < 80;
+      if (nearBottom) logPre.scrollTop = logPre.scrollHeight;
+    }
+
+    // ── Code result ───────────────────────────────────────────────
+    function showCode(code) {
+      resultSection.hidden = false;
+      resultCode.textContent = code;
+      resultCode.removeAttribute('data-highlighted');
+      hljs.highlightElement(resultCode);
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // ── Badge ─────────────────────────────────────────────────────
+    function setBadge(state) {
+      const labels = { running: 'Running', done: 'Done', failed: 'Failed' };
+      logBadge.textContent = labels[state] ?? state;
+      logBadge.className = `badge badge-${state}`;
+    }
+
+    // ── Copy button ───────────────────────────────────────────────
+    copyBtn.addEventListener('click', () => {
+      const code = resultCode.textContent;
+      if (!code) return;
+      navigator.clipboard.writeText(code).then(() => {
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = prev; }, 2000);
+      }).catch(() => {
+        // Fallback for non-HTTPS contexts
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
